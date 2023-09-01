@@ -1,0 +1,124 @@
+#include "binary_trees.h"
+
+void binary_tree_levelorder(const binary_tree_t *node, void (*action)(int));
+levelorder_queue_t *create_node(binary_tree_t *node);
+void enqueue(binary_tree_t *node, levelorder_queue_t *head,
+		levelorder_queue_t **tail, void (*action)(int));
+void free_queue(levelorder_queue_t *head);
+void dequeue(levelorder_queue_t **head);
+
+/**
+ * binary_tree_levelorder - Performs level-order traversal on a binary tree.
+ *
+ * @node: A pointer to the root node of the tree to traverse.
+ * @action: A pointer to a function to execute for each node.
+ */
+void binary_tree_levelorder(const binary_tree_t *node, void (*action)(int))
+{
+	levelorder_queue_t *head, *tail;
+
+	if (node == NULL || action == NULL)
+		return;
+
+	head = tail = create_node((binary_tree_t *)node);
+	if (head == NULL)
+		return;
+
+	while (head != NULL)
+	{
+		enqueue(head->node, head, &tail, action);
+		dequeue(&head);
+	}
+}
+
+/**
+ * create_node - Creates a new levelorder_queue_t node.
+ *
+ * @node: The binary tree node to be contained by the new node.
+ *
+ * Return: A pointer to the new node, or NULL on error.
+ */
+levelorder_queue_t *create_node(binary_tree_t *node)
+{
+	levelorder_queue_t *new;
+
+	new = malloc(sizeof(levelorder_queue_t));
+	if (new == NULL)
+		return (NULL);
+
+	new->node = node;
+	new->next = NULL;
+
+	return (new);
+}
+
+/**
+ * enqueue - Applies a function to a binary tree node
+ * and enqueues its children.
+ *
+ * @node: The binary tree node to be acted upon and enqueued.
+ * @head: A pointer to the head of the queue.
+ * @tail: A double pointer to the tail of the queue.
+ * @action: A pointer to the function to be executed on @node.
+ */
+void enqueue(binary_tree_t *node, levelorder_queue_t *head,
+		levelorder_queue_t **tail, void (*action)(int))
+{
+	levelorder_queue_t *new;
+
+	action(node->n);
+	if (node->left != NULL)
+	{
+		new = create_node(node->left);
+		if (new == NULL)
+		{
+			free_queue(head);
+			exit(1);
+		}
+		(*tail)->next = new;
+		*tail = new;
+	}
+	if (node->right != NULL)
+	{
+		new = create_node(node->right);
+		if (new == NULL)
+		{
+			free_queue(head);
+			exit(1);
+		}
+		(*tail)->next = new;
+		*tail = new;
+	}
+}
+
+/**
+ * free_queue - Frees a levelorder_queue_t queue.
+ *
+ * @head: A pointer to the head of the queue.
+ */
+void free_queue(levelorder_queue_t *head)
+{
+	levelorder_queue_t *tmp;
+
+	while (head != NULL)
+	{
+		tmp = head->next;
+		free(head);
+		head = tmp;
+	}
+}
+
+/**
+ * dequeue - Removes the head node from a levelorder_queue_t queue.
+ *
+ * @head: A double pointer to the head of the queue.
+ */
+void dequeue(levelorder_queue_t **head)
+{
+	levelorder_queue_t *tmp;
+
+	tmp = (*head)->next;
+	free(*head);
+	*head = tmp;
+}
+
